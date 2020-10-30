@@ -1,8 +1,8 @@
 {
-  "name": "express-boilerplate",
+  "name": "blogful-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
     "test": "mocha --require test/setup.js",
     "start": "node src/server.js",
@@ -13,7 +13,7 @@
     "deploy": "git push heroku master"
   },
   "keywords": [],
-  "author": "",
+  "author": "Courtney",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

@@ -51,7 +51,11 @@ describe('Articles Endpoints', function() {
         const articleId = 123456
         return supertest(app)
           .get(`/articles/${articleId}`)
-          .expect(404, { error: { message: `Article doesn't exist` } })
+          .expect(404, {
+            error: {
+              message: `Article doesn't exist`
+            }
+          })
       })
     })
 
