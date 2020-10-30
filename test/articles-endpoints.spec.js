@@ -3,7 +3,7 @@ const app = require('../src/app')
 const knex = require('knex')
 const supertest = require('supertest')
 
-describe('Articles Endponts', function () {
+describe.only('Articles Endponts', function () {
   let db
 
   before('make knex instance', () => {
@@ -14,7 +14,10 @@ describe('Articles Endponts', function () {
     app.set('db', db)
   })
   after('disconnect from db', () => db.destroy())
+
   before('clean the table', () => db('blogful_articles').truncate())
+
+  afterEach('cleanup', () => db('blogful_articles').truncate())
 
   context('Given there are articles in the database', () => {
     const testArticles = [
@@ -57,8 +60,16 @@ describe('Articles Endponts', function () {
     it('GET /articles responds with 200 and all of the articles', () => {
       return supertest(app)
         .get('/articles')
-        .expect(200)
-      // Todo: add more assertions about the body
+        .expect(200, testArticles)
+    })
+
+
+    it('GET /articles/:article_id responds with 200 and the specified article', () => {
+      const articleId = 2
+      const expectedArticle = testArticles[articleId - 1]
+      return supertest(app)
+        .get(`/articles/${articleId}`)
+        .expect(200, expectedArticle)
     })
 
   })
