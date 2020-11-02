@@ -2,7 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const { makeArticlesArray } = require('./articles.fixtures')
 
-describe('Articles Endpoints', function() {
+describe('Articles Endpoints', function () {
   let db
 
   before('make knex instance', () => {
@@ -17,7 +17,7 @@ describe('Articles Endpoints', function() {
 
   before('clean the table', () => db('blogful_articles').truncate())
 
-  afterEach('cleanup',() => db('blogful_articles').truncate())
+  afterEach('cleanup', () => db('blogful_articles').truncate())
 
   describe(`GET /articles`, () => {
     context(`Given no articles`, () => {
@@ -74,8 +74,8 @@ describe('Articles Endpoints', function() {
     })
   })
 
-  describe(`POST /articles`, () => {
-    it(`creates an article, responding with 201 and the new article`, function() {
+  describe.only(`POST /articles`, () => {
+    it(`creates an article, responding with 201 and the new article`, function () {
       this.retries(3)
       const newArticle = {
         title: 'Test new article',
@@ -102,5 +102,46 @@ describe('Articles Endpoints', function() {
             .expect(res.body)
         )
     })
+
+    //test if title is missing
+    it(`responds with 400 and an error message when the 'title' is missing`, () => {
+      return supertest(app)
+        .post('/articles')
+        .send({
+          style: 'Listicle',
+          content: 'Test new article content...'
+        })
+        .expect(400, {
+          error: { message: `Missing 'title' in request body` }
+        })
+    })
+
+    // test if content is missing 
+    it(`responds with 400 and an error message when the 'content' is missing`, () => {
+      return supertest(app)
+        .post('/articles')
+        .send({
+          title: 'Test new article',
+          style: 'Listicle',
+        })
+        .expect(400, {
+          error: { message: `Missing 'content' in request body` }
+        })
+    })
+    // test if style is missing 
+    it(`responds with 400 and an error message when the 'style' is missing`, () => {
+      return supertest(app)
+        .post('/articles')
+        .send({
+          title: 'Test new article',
+          content: 'Test new article content...'
+        })
+        .expect(400, {
+          error: { message: `Missing 'style' in request body` }
+        })
+    })
+
+
+
   })
 })
