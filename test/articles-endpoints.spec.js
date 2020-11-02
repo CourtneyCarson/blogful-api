@@ -46,7 +46,7 @@ describe('Articles Endpoints', function () {
     })
   })
 
-  describe.only(`GET /articles/:article_id`, () => {
+  describe(`GET /articles/:article_id`, () => {
     context(`Given no articles`, () => {
       it(`responds with 404`, () => {
         const articleId = 123456
@@ -101,7 +101,7 @@ describe('Articles Endpoints', function () {
 
   })
 
-  describe.only(`POST /articles`, () => {
+  describe(`POST /articles`, () => {
     it(`creates an article, responding with 201 and the new article`, function () {
       this.retries(3)
       const newArticle = {
@@ -128,6 +128,32 @@ describe('Articles Endpoints', function () {
             .get(`/articles/${res.body.id}`)
             .expect(res.body)
         )
+    })
+
+
+    describe(`DELETE /articles/:article_id`, () => {
+      context('Given there are articles in the database', () => {
+        const testArticles = makeArticlesArray()
+
+        beforeEach('insert articles', () => {
+          return db
+            .into('blogful_articles')
+            .insert(testArticles)
+        })
+
+        it('responds with 204 and removes the article', () => {
+          const idToRemove = 2
+          const expectedArticles = testArticles.filter(article => article.id !== idToRemove)
+          return supertest(app)
+            .delete(`/articles/${idToRemove}`)
+            .expect(204)
+            .then(res =>
+              supertest(app)
+                .get(`/articles`)
+                .expect(expectedArticles)
+            )
+        })
+      })
     })
 
     //test if title is missing
