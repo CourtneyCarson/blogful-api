@@ -46,7 +46,7 @@ describe('Articles Endpoints', function () {
     })
   })
 
-  describe(`GET /articles/:article_id`, () => {
+  describe.only(`GET /articles/:article_id`, () => {
     context(`Given no articles`, () => {
       it(`responds with 404`, () => {
         const articleId = 123456
@@ -73,6 +73,32 @@ describe('Articles Endpoints', function () {
           .expect(200, expectedArticle)
       })
     })
+
+    context(`Given an XSS attack article`, () => {
+      const maliciousArticle = {
+        id: 911,
+        title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        style: 'How-to',
+        content: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`
+      }
+
+      beforeEach('insert malicious article', () => {
+        return db
+          .into('blogful_articles')
+          .insert([maliciousArticle])
+      })
+
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/articles/${maliciousArticle.id}`)
+          .expect(200)
+          .expect(res => {
+            expect(res.body.title).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+            expect(res.body.content).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+          })
+      })
+    })
+
   })
 
   describe.only(`POST /articles`, () => {
@@ -141,29 +167,29 @@ describe('Articles Endpoints', function () {
     //       error: { message: `Missing 'style' in request body` }
     //     })
     // })
-/////////////////////////////////////////////////////////////////////////////////////
-///// REFACTOR TESTS BECAUSE THEY ARE REPETATIVE ///////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+    ///// REFACTOR TESTS BECAUSE THEY ARE REPETATIVE ///////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     const requiredFields = ['title', 'style', 'content']
-    
+
     requiredFields.forEach(field => {
       const newArticle = {
-        title: 'Test new artilce', 
-        style: 'Listcicle', 
+        title: 'Test new artilce',
+        style: 'Listcicle',
         content: 'Test new article content...'
       }
 
       it(`responds with 400 and an error message when the '${field}' is missing`, () => {
         delete newArticle[field]
-        
+
         return supertest(app)
           .post('/articles')
           .send(newArticle)
           .expect(400, {
-          error: {message: `Missing '${field}' in request body`}
-        })
+            error: { message: `Missing '${field}' in request body` }
+          })
       })
     })
-    
+
   })
 })
