@@ -1,6 +1,7 @@
 const knex = require('knex')
 const app = require('../src/app')
 const { makeArticlesArray } = require('./articles.fixtures')
+const supertest = require('supertest')
 
 describe('Articles Endpoints', function () {
   let db
@@ -104,44 +105,65 @@ describe('Articles Endpoints', function () {
     })
 
     //test if title is missing
-    it(`responds with 400 and an error message when the 'title' is missing`, () => {
-      return supertest(app)
-        .post('/articles')
-        .send({
-          style: 'Listicle',
-          content: 'Test new article content...'
+    // it(`responds with 400 and an error message when the 'title' is missing`, () => {
+    //   return supertest(app)
+    //     .post('/articles')
+    //     .send({
+    //       style: 'Listicle',
+    //       content: 'Test new article content...'
+    //     })
+    //     .expect(400, {
+    //       error: { message: `Missing 'title' in request body` }
+    //     })
+    // })
+
+    // // test if content is missing 
+    // it(`responds with 400 and an error message when the 'content' is missing`, () => {
+    //   return supertest(app)
+    //     .post('/articles')
+    //     .send({
+    //       title: 'Test new article',
+    //       style: 'Listicle',
+    //     })
+    //     .expect(400, {
+    //       error: { message: `Missing 'content' in request body` }
+    //     })
+    // })
+    // // test if style is missing 
+    // it(`responds with 400 and an error message when the 'style' is missing`, () => {
+    //   return supertest(app)
+    //     .post('/articles')
+    //     .send({
+    //       title: 'Test new article',
+    //       content: 'Test new article content...'
+    //     })
+    //     .expect(400, {
+    //       error: { message: `Missing 'style' in request body` }
+    //     })
+    // })
+/////////////////////////////////////////////////////////////////////////////////////
+///// REFACTOR TESTS BECAUSE THEY ARE REPETATIVE ///////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+    const requiredFields = ['title', 'style', 'content']
+    
+    requiredFields.forEach(field => {
+      const newArticle = {
+        title: 'Test new artilce', 
+        style: 'Listcicle', 
+        content: 'Test new article content...'
+      }
+
+      it(`responds with 400 and an error message when the '${field}' is missing`, () => {
+        delete newArticle[field]
+        
+        return supertest(app)
+          .post('/articles')
+          .send(newArticle)
+          .expect(400, {
+          error: {message: `Missing '${field}' in request body`}
         })
-        .expect(400, {
-          error: { message: `Missing 'title' in request body` }
-        })
+      })
     })
-
-    // test if content is missing 
-    it(`responds with 400 and an error message when the 'content' is missing`, () => {
-      return supertest(app)
-        .post('/articles')
-        .send({
-          title: 'Test new article',
-          style: 'Listicle',
-        })
-        .expect(400, {
-          error: { message: `Missing 'content' in request body` }
-        })
-    })
-    // test if style is missing 
-    it(`responds with 400 and an error message when the 'style' is missing`, () => {
-      return supertest(app)
-        .post('/articles')
-        .send({
-          title: 'Test new article',
-          content: 'Test new article content...'
-        })
-        .expect(400, {
-          error: { message: `Missing 'style' in request body` }
-        })
-    })
-
-
-
+    
   })
 })
