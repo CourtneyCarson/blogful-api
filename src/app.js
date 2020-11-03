@@ -14,13 +14,11 @@ app.use(morgan((NODE_ENV === 'production') ? 'tiny' : 'common', {
 app.use(cors())
 app.use(helmet())
 
-app.use('/api/articles', articlesRouter)
+app.use('/articles', articlesRouter)
 
 app.get('/', (req, res) => {
   res.send('Hello, world!')
 })
-
-
 
 app.use(function errorHandler(error, req, res, next) {
   let response
